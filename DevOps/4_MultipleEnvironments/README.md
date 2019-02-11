@@ -106,9 +106,39 @@ Using your preferred Git client, run the commands on your local **uni-api** Git 
 * `git fetch --all`
 * `git reset --hard origin/master`
 
-### 3. Add Test Stage
+### 3. Workaround for CodeStar changes
 
-#### 3a. Edit CodePipeline
+A recent change to CodeStar changed the CodeStar permissions. To fix this, we need to edit the policy of the CodeStar CloudFormation role.
+
+1. In the AWS Management Console choose **Services** then select **IAM** under Security, Identity, & Compliance.
+
+1. In the **IAM** console, select **Roles** on the left side.
+
+1. Search for the role **CodeStarWorker-uni-api-YOUR_NAME-CloudFormation** and select it.
+
+1. Expand the **CodeStarWorkerCloudFormationRolePolicy** policy and select **Edit policy**
+
+1. Using the JSON editor, remove the whole **condition** object specifying that the CloudFormation role only has permissions to create roles if the roles has a PermissionsBoundary. You can find this condition in rows: 118-122.
+```
+"Condition": {
+    "StringEquals": {
+        "iam:PermissionsBoundary": "arn:aws:iam::YOUR_ACCOUNT_NUMBER:policy/CodeStar_test-project_PermissionsBoundary"
+    }
+},
+```
+
+#### 3a. Edit Cloudformation templates
+
+1. In your local **uni-api** Git repository, remove the line `PermissionsBoundary: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/CodeStar_${ProjectId}_PermissionsBoundary'`from both **template.yml** and **test-template.yml**
+
+2. Commit and push your changes so your pipeline is triggered:
+* `git add -u`
+* `git commit 'fixed permission bug'`
+* `git push`
+
+### 4. Add Test Stage
+
+#### 4a. Edit CodePipeline
 
 1. In the AWS Management Console choose **Services** then select **CodeStar** under Developer Tools.
 
@@ -122,7 +152,7 @@ Using your preferred Git client, run the commands on your local **uni-api** Git 
 
 1. On the CodePipeline page, click **Edit**.
 
-#### 3b. Add Test Stage
+#### 4b. Add Test Stage
 
 1. Choose **+Stage** below the Build stage of the pipeline.
 
@@ -130,7 +160,7 @@ Using your preferred Git client, run the commands on your local **uni-api** Git 
 
 1. Enter `Test` for the **Stage Name**.
 
-#### 3c. Add GenerateChangeSet Action to Test Stage
+#### 4c. Add GenerateChangeSet Action to Test Stage
 
 1. Choose `+ Add action group` below `Test`.
 
@@ -160,7 +190,7 @@ Using your preferred Git client, run the commands on your local **uni-api** Git 
 
    ![CodePipeline Add Action](images/codepipeline-add-1-new.png)
 
-#### 3d. Add ExecuteChangeSet Action to Test Stage
+#### 4d. Add ExecuteChangeSet Action to Test Stage
 
 1. Choose `+ Add action group` below `GenerateChangeSet`.
 
@@ -182,7 +212,7 @@ Using your preferred Git client, run the commands on your local **uni-api** Git 
 
 1. Choose **Done** in the top right of the Stage.
 
-#### 3e. Save CodePipeline Changes
+#### 4e. Save CodePipeline Changes
 
 The pipeline should look like the following screenshot after adding the new Test stage.
 
