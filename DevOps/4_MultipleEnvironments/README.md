@@ -133,7 +133,7 @@ A recent change to CodeStar changed the CodeStar permissions. To fix this, we ne
 
 2. Commit and push your changes so your pipeline is triggered:
 * `git add -u`
-* `git commit 'fixed permission bug'`
+* `git commit -m 'fixed permission bug'`
 * `git push`
 
 ### 4. Add Test Stage
