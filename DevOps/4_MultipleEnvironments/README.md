@@ -127,6 +127,27 @@ A recent change to CodeStar changed the CodeStar permissions. To fix this, we ne
 },
 ```
 
+1. In the same policy on row 110, add: `"iam:DeleteRolePermissionsBoundary",` so row 101-117 looks like this:
+```
+{
+    "Action": [
+        "iam:GetRole",
+        "iam:DeleteRole",
+        "iam:DeleteRolePolicy",
+        "iam:AttachRolePolicy",
+        "iam:DetachRolePolicy",
+        "iam:DeleteUser",
+        "iam:DeleteUserPolicy",
+        "iam:DeleteRolePermissionsBoundary",
+        "iam:AttachUserPolicy",
+        "iam:DetachUserPolicy",
+        "iam:CreateServiceLinkedRole"
+    ],
+    "Resource": "*",
+    "Effect": "Allow"
+},
+```
+
 #### 3a. Edit Cloudformation templates
 
 1. In your local **uni-api** Git repository, remove the line `PermissionsBoundary: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/CodeStar_${ProjectId}_PermissionsBoundary'`from both **template.yml** and **test-template.yml**
